@@ -46,9 +46,8 @@ async def chat(request: schemas.ChatRequest,
 def get_user_messages(user_id: int, db: Session = Depends(get_db)):
     user = db.query(application.models.User).filter(application.models.User.id == user_id).first()
     if user is None:
-        raise HTTPException(status_code=404, detail="Felhasználó nem található")
+        raise HTTPException(status_code=404, detail="User not found")
 
-    # Az üzenetek előzményeit maximum 500 szóra szűkítjük
     messages = db.query(application.models.Message).filter(application.models.Message.owner_id == user_id).all()
     message_history = ""
     message_word_count = 0
@@ -58,5 +57,4 @@ def get_user_messages(user_id: int, db: Session = Depends(get_db)):
             message_word_count += len(message.text.split())
         else:
             break
-    print(message_word_count)
     return {"user": user.username, "message_history": message_history}
