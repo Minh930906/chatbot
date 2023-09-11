@@ -7,6 +7,7 @@ class UserBase(BaseModel):
     email: str
     username: str
 
+
 class UserWithMessages(BaseModel):
     user: str
     message_history: str

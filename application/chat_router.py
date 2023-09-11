@@ -20,12 +20,9 @@ async def chat(request: schemas.ChatRequest,
                current_user: schemas.UserInDB = Depends(auth.get_current_user),
                db: Session = Depends(get_db),
                rate_limit: int = Depends(rate_limiting)):
-    # A chat üzenet
     user_message = request.message_text
 
-    waiting_for_bot_response = True
 
-    # Hívja meg a GPT-3.5 modellt
     request = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -40,7 +37,6 @@ async def chat(request: schemas.ChatRequest,
     db.commit()
     db.refresh(db_message)
 
-    # Az AI válasza
     ai_message = request.choices[0].message.content
 
     return {"ai_message": ai_message}

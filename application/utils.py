@@ -18,7 +18,7 @@ def rate_limiting(
 
     if not is_rate_limited(username):
         raise HTTPException(
-            status_code=429,  # Too Many Requests
+            status_code=429,
             detail=f"Rate limit exceeded. You can only make {MAX_REQUESTS_PER_MINUTE} requests per minute.",
         )
 

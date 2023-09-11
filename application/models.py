@@ -14,7 +14,6 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
 
-    # Felhasználóhoz tartozó üzenetek
     messages = relationship("Message", back_populates="owner")
 
 
@@ -25,6 +24,5 @@ class Message(Base):
     text = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    # Üzenethez tartozó felhasználó
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="messages")

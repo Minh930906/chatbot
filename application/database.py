@@ -7,7 +7,7 @@ secrets = dotenv_values(".env")
 DATABASE_USER = secrets["DATABASE_USER"]
 DATABASE_PASSWORD = secrets["DATABASE_PASSWORD"]
 
-URL_DATABASE = 'postgresql://'+DATABASE_USER+':'+DATABASE_PASSWORD+'@localhost:5432/chatbot'
+URL_DATABASE = 'postgresql://' + DATABASE_USER + ':' + DATABASE_PASSWORD + '@localhost:5432/chatbot'
 
 engine = create_engine(URL_DATABASE)
 
