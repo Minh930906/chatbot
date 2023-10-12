@@ -12,6 +12,9 @@ class UserWithMessages(BaseModel):
     user: str
     message_history: str
 
+class MessageResponse(BaseModel):
+    message: str
+
 
 class UserIn(UserBase):
     password: str

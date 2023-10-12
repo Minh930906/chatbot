@@ -1,11 +1,12 @@
 import openai
 from dotenv import dotenv_values
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 import application.models
 from application import auth, schemas
 from application.database import get_db
+from application.schemas import MessageResponse
 from application.utils import rate_limiting
 
 chat_router = APIRouter()
@@ -15,13 +16,12 @@ api_key = secrets["CHATGPT_API_KEY"]
 openai.api_key = api_key
 
 
-@chat_router.post("/chat/")
+@chat_router.post("/chat/", response_model=MessageResponse)
 async def chat(request: schemas.ChatRequest,
                current_user: schemas.UserInDB = Depends(auth.get_current_user),
                db: Session = Depends(get_db),
                rate_limit: int = Depends(rate_limiting)):
     user_message = request.message_text
-
 
     request = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
@@ -38,23 +38,25 @@ async def chat(request: schemas.ChatRequest,
     db.refresh(db_message)
 
     ai_message = request.choices[0].message.content
+    chatbot = db.query(application.models.User).filter(application.models.User.username == 'ChatBot').first()
+    chat_bot_message = application.models.Message(text=ai_message, owner_id=chatbot.id)
+    db.add(chat_bot_message)
+    db.commit()
+    db.refresh(chat_bot_message)
 
-    return {"ai_message": ai_message}
+    return {"message": chat_bot_message}
 
 
-@chat_router.get("/chat/{user_id}", response_model=schemas.UserWithMessages)
-def get_user_messages(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(application.models.User).filter(application.models.User.id == user_id).first()
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    messages = db.query(application.models.Message).filter(application.models.Message.owner_id == user_id).all()
+@chat_router.get("/chat_history")
+def get_user_messages(db: Session = Depends(get_db)):
+    messages = db.query(application.models.Message).all()
     message_history = ""
     message_word_count = 0
     for message in messages:
+        user = db.query(application.models.User).filter(application.models.User.id == message.owner_id).first()
         if message_word_count + len(message.text.split()) <= 500:
-            message_history += message.text + " "
+            message_history += user.username + ": " + message.text + "\n"
             message_word_count += len(message.text.split())
         else:
             break
-    return {"user": user.username, "message_history": message_history}
+    return message_history
