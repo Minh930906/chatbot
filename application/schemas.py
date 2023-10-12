@@ -13,7 +13,7 @@ class UserWithMessages(BaseModel):
     message_history: str
 
 class MessageResponse(BaseModel):
-    message: str
+    respond: str
 
 
 class UserIn(UserBase):

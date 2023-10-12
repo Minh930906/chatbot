@@ -43,8 +43,13 @@ async def chat(request: schemas.ChatRequest,
     db.add(chat_bot_message)
     db.commit()
     db.refresh(chat_bot_message)
+    messages = db.query(application.models.Message).all()
+    message_history = ""
+    for message in messages:
+        user = db.query(application.models.User).filter(application.models.User.id == message.owner_id).first()
+        message_history += user.username + ": " + message.text + "\n"
 
-    return {"message": chat_bot_message}
+    return {"respond": message_history}
 
 
 @chat_router.get("/chat_history")
