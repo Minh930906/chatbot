@@ -22,13 +22,19 @@ async def chat(request: schemas.ChatRequest,
                db: Session = Depends(get_db),
                rate_limit: int = Depends(rate_limiting)):
     user_message = request.message_text
+    recent_messages = db.query(application.models.Message).order_by(application.models.Message.created_at.asc()).limit(
+        10).all()
+    messages = [{"role": "system", "content": "You are a helpful assistant"}]
+
+    for message in recent_messages:
+        role = "user" if message.owner_id == current_user.id else "assistant" if message.owner_id == 3 else "user"
+        messages.append({"role": role, "content": message.text})
+
+    messages.append({"role": "user", "content": user_message})
 
     request = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": user_message}
-        ],
+        messages=messages,
         max_tokens=100
     )
 
@@ -56,12 +62,8 @@ async def chat(request: schemas.ChatRequest,
 def get_user_messages(db: Session = Depends(get_db)):
     messages = db.query(application.models.Message).all()
     message_history = ""
-    message_word_count = 0
     for message in messages:
         user = db.query(application.models.User).filter(application.models.User.id == message.owner_id).first()
-        if message_word_count + len(message.text.split()) <= 500:
-            message_history += user.username + ": " + message.text + "\n"
-            message_word_count += len(message.text.split())
-        else:
-            break
+        message_history += user.username + ": " + message.text + "\n"
+
     return message_history
