@@ -1,0 +1,47 @@
+def test_password_hashing(self):
+        password = "mysecretpassword"
+
+        hashed_password = get_password_hash(password)
+
+        self.assertIsNotNone(hashed_password)
+        self.assertNotEqual(hashed_password, password)
+
+def test_access_token_creation(self):
+        data = {"user_id": 1, "username": "testuser"}
+
+        expires_delta = timedelta(minutes=30)
+
+        token = create_access_token(data, expires_delta)
+
+        self.assertIsNotNone(token)
+
+        self.assertTrue(jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM]))
+
+-is_rate_limit_exceeded(username: str) test
+
+def setUp(self):
+        # Inicializálj egy tesztelő adatot a user_request_count változóban
+        self.username = "test_user"
+        user_request_count[self.username] = {
+            "count": 0,
+            "timestamp": datetime.now()
+        }
+
+def test_new_user_not_exceeded_limit(self):
+        # Teszteljük egy új felhasználó esetét, aki még nem lépte túl a limitet
+        self.assertFalse(is_rate_limit_exceeded("new_user"))
+
+def test_existing_user_not_exceeded_limit(self):
+        # Teszteljük egy meglévő felhasználó esetét, aki még nem lépte túl a limitet
+        self.assertFalse(is_rate_limit_exceeded(self.username))
+
+def test_existing_user_exceeded_limit(self):
+        # Teszteljük egy meglévő felhasználó esetét, aki már túllépte a limitet
+        user_request_count[self.username]["count"] = 3
+        self.assertTrue(is_rate_limit_exceeded(self.username))
+
+ def test_existing_user_reset_limit(self):
+        # Teszteljük egy meglévő felhasználó esetét, aki túllépte a limitet, majd visszaállítódott
+        user_request_count[self.username]["count"] = MAX_REQUESTS_PER_MINUTE
+        user_request_count[self.username]["timestamp"] = datetime.now() - timedelta(minutes=1)
+        self.assertFalse(is_rate_limit_exceeded(self.username))
